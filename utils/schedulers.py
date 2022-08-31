@@ -23,7 +23,7 @@ def scheduler_warmup(model, conf):
 
 
 def get_linear_schedule_with_warmup(model, config, trainer: Trainer):
-    lr = config.lr
+    lr = config.learning_rate
     weight_decay = config.weight_decay
     warmup_steps = config.warmup_steps
     num_training_steps = trainer.estimated_stepping_batches
