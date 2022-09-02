@@ -3,6 +3,7 @@ from utils.load_config import json_config
 from config.base_config import TrainConfig, DataModuleConfig
 
 
+
 @json_config
 @dataclass
 class PredNextTaskConfig(TrainConfig, DataModuleConfig):

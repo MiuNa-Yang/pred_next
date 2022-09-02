@@ -13,6 +13,7 @@ from dataset.pred_next_dataset import PredNextDataset
 from model.base_model import PredNextModel
 from model.tokenizer import Tokenizer
 from utils import schedulers, metrics
+from transformers import AdamW, get_cosine_schedule_with_warmup, get_linear_schedule_with_warmup
 
 
 @json_config
@@ -28,7 +29,7 @@ class PredNextTask(LightningModule):
         self.cfg = cfg
         self.model = PredNextModel(self.cfg)
         self.loss = nn.CrossEntropyLoss()
-        self.tokenizer = Tokenizer(cfg.tokenizer_name)
+        self.tokenizer = Tokenizer(cfg.tokenizer_name, cfg.max_len)
         self.train_data = None
         self.val_data = None
         self.test_data = None
@@ -88,11 +89,17 @@ class PredNextTask(LightningModule):
             scores += _s
         results[0] = preds, scores
 
+    # def configure_optimizers(self):
+    #     optimizer, scheduler = schedulers.get_linear_schedule_with_warmup(self.model, self.cfg, self.trainer)
+    #     return [optimizer], [scheduler]
+
     def configure_optimizers(self):
-        optimizer, scheduler = schedulers.get_linear_schedule_with_warmup(self.model, self.cfg, self.trainer)
-        return [optimizer], [scheduler]
+        optimizer = AdamW(self.model.parameters(), lr=self.cfg.learning_rate)
+        return [optimizer]
 
     def setup(self, stage: Optional[str] = None):
+        print(stage)
+        # if stage in ['train', 'validate']:
         train_data = PredNextDataset(self.cfg.train_data_path)
         test_data = PredNextDataset(self.cfg.test_data_path)
         val_data = PredNextDataset(self.cfg.val_data_path)
@@ -131,17 +138,17 @@ class PredNextTask(LightningModule):
 
     def train_dataloader(self):
         return DataLoader(self.train_data, batch_size=self.cfg.train_batch_size, shuffle=True
-                          , collate_fn=self.collate_fn, pin_memory=True, drop_last=True
+                          , collate_fn=self.collate_fn, pin_memory=False, drop_last=True
                           , num_workers=self.cfg.num_workers)
 
     def val_dataloader(self):
         return DataLoader(self.test_data, batch_size=self.cfg.test_batch_size, shuffle=False
-                          , collate_fn=self.collate_fn, pin_memory=True, drop_last=False
+                          , collate_fn=self.collate_fn, pin_memory=False, drop_last=False
                           , num_workers=self.cfg.num_workers)
 
     def get_predict_dataloader(self, data, batch_size):
         return DataLoader(data, batch_size=batch_size, shuffle=False, collate_fn=self.collate_fn_predict
-                          , pin_memory=True, drop_last=False)
+                          , pin_memory=False, drop_last=False)
 
     def check_dataloader(self):
         return DataLoader(self.test_data, batch_size=2, collate_fn=self.collate_fn, shuffle=True)

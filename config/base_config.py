@@ -38,7 +38,7 @@ class TrainConfig:
     num_embed: int = 0
     val_check_interval: Union[int, float] = 1.0
     default_root_dir: str = ''
-    num_workers: int = 1
+    num_workers: int = 0
 
 
 @dataclass
@@ -47,9 +47,9 @@ class DataModuleConfig:
     test_data_path: str = ''
     val_data_path: str = ''
     test_size: float = 0.1
-    train_batch_size: int = 32
-    test_batch_size: int = 32
-    val_batch_size: int = 32
+    train_batch_size: int = 16
+    test_batch_size: int = 16
+    val_batch_size: int = 16
 
     intent2index_path: str = ''
     index2intent_path: str = ''
