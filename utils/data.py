@@ -31,3 +31,12 @@ def random_split_by_label(x, y, test_size):
     train_x, train_y = zip(*train_data)
     test_x, test_y = zip(*test_data)
     return list(train_x), list(train_y), list(test_x), list(test_y)
+
+
+def split_data(data, test_size):
+    length = len(data)
+    test_size = int(test_size * length)
+    train_size = length - test_size
+    train_data, val_data = random_split(data, [train_size, test_size],
+                                        generator=torch.Generator().manual_seed(42))
+    return train_data, val_data
